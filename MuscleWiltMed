@@ -11,7 +11,7 @@ public class AgentBased {
     public static void main(String[] args) throws Exception {
         Tissue[][] muscles = new Tissue[10][10];
         int tabint = 1;
-
+        ArrayList<ArrayList<Integer>> infectedlist;
         int[][] healthtable = new int[10][10];
         int[] hcount = new int[11];
         int i, j, maxtab = 10;
@@ -25,7 +25,7 @@ public class AgentBased {
                 muscles[i][j] = new Tissue(i, j, 9, 10, v, w, x, y);
                 healthtable[i][j] = muscles[i][j].gethealth();
             }
-        healthtable[0][1]=2;
+
         printtable(healthtable, tabint, 9, 9);
         for (tabint=0; tabint <= 10; tabint++) {
             for (i = 0; i <= 9; i++)
@@ -162,16 +162,37 @@ class Tissue {
         return myj;
     }
 
-    public int newhealth() { //process generator for the new color of the Chameleon
+    public int newhealth(ArrayList<ArrayList<Integer>> infected, int myi, int myj) { //process generator for the new color of the Chameleon
         int x;
         int health;
         x=(int)(Math.random()*100);
         if (x<=95)health=1;// Tissue is healthy (95%)
-        else health=2;// Tissue is damaged (5%)
+        else { // Tissue is damaged (5%)
+            health = 2;
+            Integer row = myi;
+            Integer column = myj;
+            ArrayList<Integer> pair = new ArrayList<>();
+            pair.add(row);
+            pair.add(column);
+
+            infected.add(pair);
+        }
         return health;
     }//end of newcolor
     public void changehealth(int [][] healthtable, int myi, int myj) {
         int i,j;//first some integers for later
+        if(healthtable[myi][myj] == 2) {
+           int x=(int)(Math.random()*100);
+            if(i != 0 && x < 15) {
+                healthtable[myi - 1][myj] = 2;
+
+            }else if(i != 9 && x < 30) {
+                healthtable[myi + 1][myj] =2;
+
+            }
+
+        }
+
         { //myhealth=newhealth();
             int x;
             if((myi==0)&&(myj==0))
@@ -183,7 +204,7 @@ class Tissue {
 //                }
                 if (myhealth==2){
                     if (x<=15){
-                        healthtable[1][0]=2;
+                        healthtable[myi+1][myj]=2;
                     }
                     else healthtable[0][1]=2;
                 }
