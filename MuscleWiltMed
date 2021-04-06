@@ -1,0 +1,315 @@
+import java.io.*;
+import java.io.IOException;
+import javax.swing.*;
+import java.util.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.lang.IllegalStateException;
+import java.util.NoSuchElementException;
+
+public class AgentBased {
+    public static void main(String[] args) throws Exception {
+        Tissue[][] muscles = new Tissue[10][10];
+        int tabint = 1;
+
+        int[][] healthtable = new int[10][10];
+        int[] hcount = new int[11];
+        int i, j, maxtab = 10;
+        double maxper = 0.6;
+        for (i = 0; i <= 9; i++)
+            for (j = 0; j <= 9; j++) {
+                int v= (int)Math.random()*100;
+                int w= (int)Math.random()*100;
+                int x= (int)Math.random()*100;
+                int y= (int)Math.random()*100;
+                muscles[i][j] = new Tissue(i, j, 9, 10, v, w, x, y);
+                healthtable[i][j] = muscles[i][j].gethealth();
+            }
+        healthtable[0][1]=2;
+        printtable(healthtable, tabint, 9, 9);
+        for (tabint=0; tabint <= 10; tabint++) {
+            for (i = 0; i <= 9; i++)
+                for (j = 0; j <= 9; j++) {
+                    muscles[i][j].changehealth(healthtable, i, j);
+                    if ((i == 0) && (j == 0)) {
+                        System.out.println("\n this is myi, myj " + muscles[i][j].getMyi() + " " + muscles[i][j].getMyj());
+                        System.out.println("this is for 0,0 health status is " + muscles[0][0].gethealth());
+                    }
+                }
+            for (i = 0; i <= 9; i++)
+                for (j = 0; j <= 9; j++) {
+                    healthtable[i][j] = muscles[i][j].gethealth();
+                }
+            printtable(healthtable, tabint, 9, 9);
+            counttable(healthtable, hcount);
+            printhcount(hcount);
+            tabint++;
+//            for (i = 0; i <= 9; i++)
+//                for (j = 0; j <= 9; j++) {
+//                    muscles[i][j].updatelastchange();
+//                }
+           // if (stopinter(hcount, maxper) == 1) tabint = maxtab + 1;
+        }
+    }//End of main
+
+    //Functions here
+    public static void printtable(int[][] healthtable, int tprint, int imax, int jmax) {//This prints the healthtable
+        System.out.println("           This is the " + tprint + " Interation of the healthtable");
+        // Print table header
+        System.out.println("T1    T2    T3    T4    T5    T6    T7    T8    T9    T10" + "\n");
+        for (int i = 0; i <= imax; i++) {
+            for (int j = 0; j <= jmax; j++) Hname(healthtable[i][j]);
+            //now skip a line
+            System.out.println();
+        }// next row of colors
+    }//End of printtable
+
+    public static void Hname(int hnum) {//Prints
+        if (hnum == 1) System.out.print("HM    ");
+        else System.out.print("DMD   ");
+        return;
+    }//End of Hname
+    public static void printhcount(int []hcount)
+    {//this function prints the Health count
+        System.out.println("    HM     DMD   ");
+        for(int i=1;i<=2;i++)
+        {System.out.print("     "+hcount[i]);}
+    }//end of printhcount
+    public static void counttable(int [][]healthtable,int []hcount)
+    {//this function updates hcount by counting the colors in the table.
+        for(int i=0;i<=10;i++)hcount[i]=0;
+        for(int irow=0;irow<=9;irow++)
+            for(int jcol=0;jcol<=9;jcol++)
+            {  hcount[healthtable[irow][jcol]]++;}
+    }//end of counttable
+
+//    public int setmyhealth(int [][]healthtable, int n) {
+//        healthtable.myhealth=n;
+//        return myhealth;
+//    }
+
+/*    public static int stopinter(int []ccount,double cspread)
+    {//this function returns a 0 if none are over a given percentage otherwise a 1
+        int stopit=0;
+        for(int i=1;i<=5;i++)
+            if(ccount[i]/60.0>cspread)stopit=1;
+        return stopit;
+    }//end of stopinter
+*/
+}//End of AgentBased
+
+
+
+
+
+
+class Tissue {
+    //[i][j] location in illusion
+    protected int myi;
+    protected int myj;
+    protected int myv;
+    protected int myw;
+    protected int myx;
+    protected int myy;
+    protected int myhealth;
+    protected int nrows;
+    protected int ncols;
+    protected Tissue(int i, int j, int n, int m, int v, int w, int x, int y){
+        myi=i;
+        myj=j;
+        nrows=n-1;
+        ncols=m-1;
+        myhealth=newhealth();
+        myv=v;
+        myw=w;
+        myx=x;
+        myy=y;
+        return;
+    }//End of constructor
+
+    int gethealth() {
+        return myhealth;
+    }
+    public int setmyhealth(int n) {
+        myhealth=n;
+        return myhealth;
+    }
+
+    public int getMyv() {
+        return myv;
+    }
+
+    public int getMyw() {
+        return myw;
+    }
+
+    public int getMyx() {
+        return myx;
+    }
+
+    public int getMyy() {
+        return myy;
+    }
+
+    public void setMyhealth(int myhealth) {
+        this.myhealth = myhealth;
+    }
+
+    int getMyi() {
+        return myi;
+    }
+    int getMyj() {
+        return myj;
+    }
+
+    public int newhealth() { //process generator for the new color of the Chameleon
+        int x;
+        int health;
+        x=(int)(Math.random()*100);
+        if (x<=95)health=1;// Tissue is healthy (95%)
+        else health=2;// Tissue is damaged (5%)
+        return health;
+    }//end of newcolor
+    public void changehealth(int [][] healthtable, int myi, int myj) {
+        int i,j;//first some integers for later
+        { //myhealth=newhealth();
+            int x;
+            if((myi==0)&&(myj==0))
+            {// we are in the upper left cornor at healthtable[0][0] of the Muscle Tissue
+                x=(int)(Math.random()*50);
+                int y=(int)(Math.random()*50);
+//                if (((healthtable[1][0]==2)&&(x<=15))||(healthtable[0][1]==2)&&(y<=35)) {
+//                    myhealth=2;
+//                }
+                if (myhealth==2){
+                    if (x<=15){
+                        healthtable[1][0]=2;
+                    }
+                    else healthtable[0][1]=2;
+                }
+                else return;
+            }//done with upper left cornor
+
+            else if((myi==0)&&(myj==ncols-1))
+            {// we are in the upper right cornor at healthtable[0][ncols-1] of the illusion, we look left and down
+
+                    x=(int)(Math.random()*50);
+                if (((healthtable[0][ncols-2]==2)&&(x<=15))||(healthtable[1][ncols-1]==2)&&(x<=35)) {
+                    myhealth=2;
+                }
+                    if (myhealth==2){
+                        if (x<=15){
+                            healthtable[1][ncols-1]=2;
+                        }
+                        else healthtable[0][ncols-2]=2;
+                    }
+                    else return;
+                }//done with upper right cornor
+
+            else if((myi==nrows-1)&&(myj==0))
+            {// we are in the lower left cornor at healthtable[nrows-1][0] of the illusion, we look up[nrows-2][0] and right [nrows-1][1]
+                    x=(int)(Math.random()*50);
+                    if (myhealth==2){
+                        if (x<=15){
+                            healthtable[nrows-2][0]=2;
+                        }
+                        else healthtable[nrows-1][1]=2;
+                    }
+                    else return;
+            }//done with lower left corner
+
+            else if((myi==nrows-1)&&(myj==ncols-1))
+            {// we are in the lower right corner at healthtable[nrows-1][ncols-1] of the illusion, we look left [nrows-1][ncols-2] and up [nrows-2][ncols-1]
+                    x=(int)(Math.random()*50);
+                    if (myhealth==2){
+                        if (x<=15){
+                            healthtable[nrows-2][ncols-1]=2;
+                        }
+                        else healthtable[nrows-1][ncols-2]=2;
+                    }
+                    else return;
+            }//done with lower right corner
+
+            else if( (myi==0)&&(myj>0)&&(myj<=ncols-1))
+            {// Now we check the upper row.  Remember we don't have to do the beginning and end cell already done..
+                // here we must check cells on either side and below
+                    x=(int)(Math.random()*85);
+                    if (myhealth==2){
+                        if (x<=35){
+                            healthtable[0][myj-1]=2;
+                        }
+                        else if (x<=60) healthtable[0][myj+1]=2;
+                        else healthtable[1][myj]=2;
+                    }
+                    else return;
+            }//Done with first row myi==0
+
+            else if(myi==(nrows-1)&&(myj>0)&&(myj<ncols-1))
+            {//this is on the bottom row remember we have checked the corners so beginning and end cells done
+                //here we muct check the cells on either side and above
+                    x=(int)(Math.random()*85);
+                    if (myhealth==2){
+                        if (x<=35){
+                            healthtable[myi][myj-1]=2;
+                        }
+                        else if (x<=60) healthtable[myi][myj+1]=2;
+                        else healthtable[myi-1][myj]=2;
+                    }
+                    else return;
+            }//Done with last row myi==nrows-1
+
+            else if((myj==0)&&(myi>0)&&(myi<nrows-1))
+            {//This is on the left column of the illusion.  Remember we have checked the top and bottom cells
+                // here we must check for cells above, below and to the right of the cell.
+                x=(int)(Math.random()*85);
+                    if (myhealth==2){
+                        if (x<=15){
+                            healthtable[myi+1][0]=2;
+                        }
+                        else if (x<=30) healthtable[myi-1][0]=2;
+                        else healthtable[myi][1]=2;
+                    }
+                    else return;
+            }
+
+            else if((myj==(ncols-1))&&(myi>0)&&(myi<nrows-1))
+            {//this is on the right column of the illusion.  Remember we checked top and bottom cell
+                // here we muct check for cells above, below and to the left of the cell
+
+
+                x=(int)(Math.random()*85);
+                if (myhealth==2){
+                    if (x<=15){
+                        healthtable[myi-1][myj]=2;
+                    }
+                    else if (x<=30) healthtable[myi+1][myj]=2;
+                    else healthtable[myi][myj-1]=2;
+                }
+                else return;
+            }//done with the right column myj==ncol
+
+
+
+
+
+            else if((myi>0)&&(myi<nrows-1)&&(myj>0)&&(myj<ncols-1))
+            {//we have a cell in the middle away from surrounding rows columns and corners
+                // we have a possible spread to 4 directions
+
+                x=(int)(Math.random()*100);
+                if (myhealth==2){
+                    if (x<=15){
+                        healthtable[myi-1][myj]=2;
+                    }
+                    else if (x<=30){
+                        healthtable[myi+1][myj]=2;
+                    }
+                    else if (x<=65) {healthtable[myi][myj-1]=2;}
+                    else healthtable[myi][myj+1]=2;
+                }
+                else return;
+            }//Done with the cell in the middle
+        }//end of if(lastchange>=mycycle)
+        return;
+    } // end of function changehealth
+} //end of class Tissue
